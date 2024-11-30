@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThirstTap Admin - Orders</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
+    <script>
+        let lastOrderId = 0; // Store the ID of the most recent order
+    
+        document.addEventListener("DOMContentLoaded", function() {
+            // Get URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const status = urlParams.get('status') || 'all'; // Default to 'all' if no status is provided
+
+            // Set the filter to the value from the URL, if it exists
+            const orderFilter = document.getElementById('order-filter');
+            orderFilter.value = status;
+
+
+            fetchOrders(status); // Fetch orders on page load
+            // Add event listener for filter change
+            orderFilter.addEventListener('change', function() {
+                fetchOrders(this.value); // Fetch orders with the selected filter
+            });
+            
+            setInterval(fetchNewOrders, 5000); // Check for new orders every 5 seconds
+    
+            // Add event listener for filter change
+            document.getElementById('order-filter').addEventListener('change', function() {
+                fetchOrders(this.value); // Fetch orders with the selected filter
+            });
+        });
+    
+        function fetchOrders(status = 'all') {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `../WebsiteBackend/fetchOrdersAdmin.php?status=${status}`, true); // Backend PHP to fetch orders
+    
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    const tbody = document.querySelector('table tbody');
+                    tbody.innerHTML = ''; // Clear existing rows
+    
+                    data.forEach(order => {
+                        const row = `
+                            <tr>
+                                <td>${order.orderid}</td>
+                                <td>${order.delivery_date}</td>
+                                <td>${order.status}</td>
+                                <td><a href="order_details.html?order_id=${order.orderid}">View Details</a></td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row; // Append order to the table
+                    });
+                } else if (xhr.readyState === 4) {
+                    console.error('Error fetching orders:', xhr.statusText);
+                }
+            };
+    
+            xhr.onerror = function() {
+                console.error('Request failed');
+            };
+    
+            xhr.send();
+        }
+    
+        function fetchNewOrders() {
+            // This function remains unchanged unless you want to implement a filter for new orders
+        }
+    
+        function searchOrders() {
+            const searchInput = document.getElementById('order-search').value;
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `../WebsiteBackend/fetchOrdersAdmin.php?search=${searchInput}`, true); // Assuming the backend supports search by order ID
+    
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    const tbody = document.querySelector('table tbody');
+                    tbody.innerHTML = ''; // Clear existing rows
+    
+                    data.forEach(order => {
+                        const row = `
+                            <tr>
+                                <td>${order.orderid}</td>
+                                <td>${order.delivery_date}</td>
+                                <td>${order.status}</td>
+                                <td><a href="order_details.html?order_id=${order.orderid}">View Details</a></td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row; // Append order to the table
+                    });
+                } else if (xhr.readyState === 4) {
+                    console.error('Error searching orders:', xhr.statusText);
+                }
+            };
+    
+            xhr.onerror = function() {
+                console.error('Search request failed');
+            };
+    
+            xhr.send();
+        }
+    </script>
+    
+</head>
+<body>
+    <div class="container">
+        <div class="container-fluid">
+            <aside class="sidebar">
+                <div class="sidebar-collapse">
+                    <img src="assets/logo.svg" alt="ThirstTap Logo" class="logo" />
+                    <h2><span class="thirst">Thirst</span><span class="tap">Tap</span><br><span class="admin">Admin</span></h2>
+                    <ul class="list-unstyled">
+                        <li class="sidebar-item"><a href="dashboard.html"><img src="assets/dashboard icon.svg" alt="Dashboard Icon" class="icon"> <span class="sidebar-text">Dashboard</span></a></li>
+                        <li class="sidebar-item"><a href="inventory.html"><img src="assets/inventory icon.svg" alt="Inventory Icon" class="icon"> <span class="sidebar-text">Inventory</span></a></li>
+                        <li class="sidebar-item"><a href="station_profile.html"><img src="assets/station profile icon.svg" alt="Station Profile Icon" class="icon"> <span class="sidebar-text">Station Profile</span></a></li>
+                        <li class="sidebar-item"><a href="orders.html"><img src="assets/orders icon.svg" alt="Orders Icon" class="icon"> <span class="sidebar-text">Orders</span></a></li>
+                        <li class="sidebar-item"><a href="customer_feedback.html"><img src="assets/cf icon.svg" alt="Customer Feedback Icon" class="icon"> <span class="sidebar-text">Feedbacks</span></a></li>
+                        <li class="sidebar-item"><a href="sales_report.html"><img src="assets/sales icon.svg" alt="Sales Report Icon" class="icon"> <span class="sidebar-text">Sales Report</span></a></li>
+                    </ul>
+                    <a href="login_page.php" class="logout"><img src="assets/logout icon.svg" alt="Logout Icon" class="icon"> <span class="sidebar-text">Log out</span></a>
+                </div>
+            </aside>
+            <main class="dashboard">
+                <div class="icons">
+                    <a href="notif.html" class="notification-icon"><img src="assets/bell-02.svg" alt="Notification Icon"></a>
+                    <a href="profile_settings.html" class="profile-icon"><img src="assets/user-profile-circle.svg" alt="Profile Icon"></a>
+                </div>
+                <div class="recent-orders">
+                    <div class="order-filters">
+                        <label for="order-filter">Filter Orders:</label>
+                        <select id="order-filter">
+                            <option value="all">All Orders</option>
+                            <option value="pending">Pending</option>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="out for delivery">Out for Delivery</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <div class="search-orders">
+                            <input type="text" placeholder="Search by Order ID" id="order-search">
+                            <button onclick="searchOrders()">Search</button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date and Time</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Orders will be populated here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>          
+            </main>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+<style>
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background-color: #f0f4f8;
+    overflow-x: hidden;
+}
+.container {
+    display: flex;
+}
+
+/* Sidebar styles */
+.sidebar {
+    width: 60px; /* Initial width showing only icons */
+    background-color: #65ACC2;
+    height: 100vh;
+    padding: 20px 0; /* Adjusted for smaller width */
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    transition: width 0.3s ease;
+}
+
+.sidebar:hover {
+    width: 250px; /* Expands on hover */
+}
+
+.logo {
+    width: 30px; /* Adjust logo size as needed */
+    height: auto;
+    display: block;
+    transition: opacity 0.3s ease;
+    margin-left: 14px; 
+    margin-top: 30px; 
+    margin-bottom: 50px; 
+}
+
+.sidebar:hover .logo {
+    opacity: 0;
+    display: none;
+}
+
+
+.sidebar h2 {
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+    transition: opacity 0.5s ease; /* Smooth transition */
+    display: none;
+}
+
+.sidebar:hover h2 {
+    display: block;
+}
+
+.sidebar h2 .thirst {
+    color: #0033FF; 
+    font-weight: 700; 
+    font-size: 40px; 
+}
+
+.sidebar h2 .tap {
+    font-size: 40px;
+}
+
+.sidebar h2 .admin {
+    color: #ffffff; 
+    font-style: italic; 
+    font-size: 20px; 
+    font-weight: normal; 
+    margin-left: 160px;
+    position: relative; 
+    top: -5px;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 0 0;
+    text-align: center; /* Center icons initially */
+}
+
+.sidebar ul li a {
+    padding: 10px 0;
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center icon and text */
+    transition: justify-content 0.3s ease;
+}
+
+.sidebar:hover ul li a {
+    justify-content: flex-start; /* Align text to the left on hover */
+}
+
+.sidebar ul li a img {
+    margin-right: 10px; 
+    width: 20px; 
+    margin-left: 4px;
+    height: auto;
+    transition: margin-left 0.3s ease; /* Smooth icon position transition */
+}
+
+.sidebar:hover ul li a img {
+    margin-left: 20px; /* Adjust icon position on hover */
+}
+
+.sidebar ul li a .sidebar-text {
+    display: none;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar:hover ul li a .sidebar-text {
+    display: inline; /* Show text on hover */
+    opacity: 1;
+}
+
+.sidebar-item a:hover {
+    background-color: #89C2D8;
+   
+}
+
+.sidebar a.logout {
+    padding: 10px 0;
+    margin-top: 150px;
+    display: flex; 
+    align-items: center; 
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    justify-content: center; /* Center icon and text */
+    transition: justify-content 0.3s ease;
+}
+
+.sidebar a.logout:hover{
+    background-color: #89C2D8;
+}
+
+.sidebar:hover a.logout {
+    justify-content: flex-start; /* Align text to the left on hover */
+    padding-left: 20px; /* Adjust icon position on hover */
+}
+
+.sidebar a.logout img {
+    margin-right: 10px; 
+    margin-left: 4px;
+    width: 20px; 
+    height: auto;
+    vertical-align: middle; 
+    transition: margin-left 0.3s ease;
+}
+
+.sidebar:hover a.logout img {
+    margin-left: 0;
+}
+
+.sidebar a.logout .sidebar-text {
+    display: none;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar:hover a.logout .sidebar-text {
+    display: inline;
+    opacity: 1;
+}
+
+
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 30px;
+    width: 100%;
+    overflow-y: auto;
+}
+
+.top-section {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 20px; 
+    align-items: flex-start;
+}.icons {
+    display: flex;
+    gap: 20px; 
+    margin-top: -10px;
+    margin-left: 800px;
+}
+.icons img {
+    width: 30px; 
+    height: auto;
+    
+}
+.order-section {
+    margin-top: 20px;
+    background-color: #ffffff;
+    padding: 20px; 
+    border-radius: 20px;
+    min-height: calc(100vh - 100px); 
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+.order-filters {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    margin-left: 10px;
+}
+.filter-orders {
+    display: flex;
+    align-items: center; 
+}
+
+.filter-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333; 
+}
+
+.filter-orders select {
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    margin-right: 350px;
+    margin-top: -5px;
+}
+
+.filter-orders select{
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+}
+.search-orders {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.search-orders input {
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    margin-top: -5px; 
+    margin-right: 10px;
+}
+
+.search-btn {
+    background-color: #ffffff;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    top: -5px; 
+    margin-right: 15px;
+}
+
+.recent-orders {
+    margin-top: 40px; 
+    background-color: #fff; 
+    padding: 20px; 
+    border-radius: 20px; 
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.recent-orders h3 {
+    margin-bottom: 20px; 
+    background-color: #fff; 
+    font-size: 25px;
+}
+
+table {
+    width: 100%; 
+    border-collapse: collapse; 
+    background-color: #fff; 
+    margin-top: 0; 
+    table-layout: fixed; 
+}
+
+table th, table td {
+    padding: 15px;
+    text-align: left;
+    overflow: hidden; 
+    text-overflow: ellipsis;
+    white-space: nowrap; 
+}
+
+table th {
+    background-color: #f0f0f0;
+}
+
+table th:nth-child(1), /* Order ID */
+table td:nth-child(1) {
+    width: 25%; 
+}
+
+table th:nth-child(2), /* Date and Time */
+table td:nth-child(2) {
+    width: 40%; 
+}
+
+table th:nth-child(3), /* Status */
+table td:nth-child(3) {
+    width: 25%; 
+}
+
+table th:nth-child(4), /* View details */
+table td:nth-child(4) {
+    width: 25%; 
+}
+table a {
+    color: #00a6b5;
+    text-decoration: none;
+}
+</style>

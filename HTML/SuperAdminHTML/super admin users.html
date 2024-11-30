@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThirstTap Super Admin - Users</title>
+
+    <script>
+        // Fetch user data when the page loads
+        window.onload = function() {
+            fetchUsers();
+        };
+
+       function fetchUsers() {
+            fetch('../../WebsiteBackend/fetchUsers.php')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('userTableBody');
+                    tableBody.innerHTML = ''; // Clear existing content
+
+                    // Populate table with fetched data
+                    data.forEach(user => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${user.userid}</td>
+                            <td>${user.name}</td>
+                            <td>${user.email}</td>
+                            <td><a href="super admin user view details.html?userId=${user.userid}" class="view-details">View details</a></td>
+                        `;
+                        row.onclick = () => selectUser(row, user.userid); // Add click event to select the row
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching user data:', error);
+                    const tableBody = document.getElementById('userTableBody');
+                    tableBody.innerHTML = '<tr><td colspan="4">Error loading user data.</td></tr>';
+                });
+        }
+
+        let selectedUserRow = null; // Variable to keep track of the selected row
+
+        function selectUser(row, userId) {
+            // Deselect the previously selected row if it exists
+            if (selectedUserRow) {
+                selectedUserRow.classList.remove('selected'); // Remove the highlight from the previously selected row
+            }
+
+            // Highlight the newly selected row
+            selectedUserRow = row; // Update the selected row variable
+            row.classList.add('selected'); // Add the highlight to the selected row
+
+            // Perform any additional actions you want with the selected admin ID
+            console.log('Selected User ID:', userId);
+        }
+
+        function removeUser() {
+            if (selectedUserRow) {
+                const userId = selectedUserRow.cells[0].textContent; // Get the Admin ID from the selected row
+                
+                // Confirm deletion
+                const confirmDelete = confirm(`Are you sure you want to delete user with ID: ${userId}?`);
+                
+                if (confirmDelete) {
+                    // Proceed with deletion
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', '../../WebsiteBackend/deleteUser.php', true); // Adjust the path as necessary
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+                    // Send the admin ID to the server
+                    xhr.send(`userid=${userId}`);
+
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState === 4) {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.success) {
+                                console.log(`User with ID: ${userId} deleted successfully.`);
+                                // Remove the selected row from the table
+                                selectedUserRow.remove(); // Remove the selected row from the DOM
+                                selectedUserRow = null; // Reset the selected row variable
+                            } else {
+                                alert('Error deleting user: ' + response.message);
+                            }
+                        }
+                    };
+                }
+            } else {
+                alert('Please select a user to remove.');
+            }
+        }
+        
+
+
+
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2><span class="thirst">Thirst</span><span class="tap">Tap</span><br><span class="superadmin">Super Admin</span></h2>
+            <ul>
+                <li><a href="super admin dashboard.html"><img src="super admin assets/dashboard icon.svg" alt="Dashboard Icon"> Dashboard</a></li>
+                <li><a href="super admin stations.html"><img src="super admin assets/station icon.svg" alt="Stations Icon"> Stations</a></li>
+                <li><a href="super admin admins.html"><img src="super admin assets/admins and users icon.svg" alt="Admins and Users Icon"> Admins and Users</a></li>
+            </ul>
+            <a href="../login_page.php" class="logout"><img src="../assets/logout icon.svg" alt="Logout Icon"> Log out</a>
+        </aside>
+        <main class="dashboard">
+            <div class="icons">
+                <a href="super admin notifs.html" class="notification-icon"><img src="assets/bell-02.svg" alt="Notification Icon"></a>
+                <a href="super admin profile settings.html" class="profile-icon"><img src="assets/user-profile-circle.svg" alt="Profile Icon"></a>
+            </div>
+            <div class="wrapper">
+                <div class="button-group2">
+                    <button1 onclick="window.location.href='super admin admins.html'">Admin</button1>
+                    <button2 onclick="window.location.href='super admin users.html'">User</button2>
+                </div>  
+                <div class="button-group">
+                    <button class="button">
+                        <img src="super admin assets/remove icon.svg" alt="Remove Icon" class="icon" onclick="removeUser()"> Remove user
+                    </button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- User data will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+
+
+<style>
+    .selected {
+  background-color: #d1e7dd; /* Light green background color */
+}
+
+
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background-color: #f0f4f8;
+    overflow-x: hidden;
+}
+
+.container {
+    display: flex;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #65ACC2;
+    height: 100vh;
+    padding: 20px;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.sidebar h2 {
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+}
+
+.sidebar h2 .thirst {
+    color: #0033FF; 
+    font-weight: 700; 
+    font-size: 40px; 
+}
+
+.sidebar h2 .tap {
+    font-size: 40px;
+}
+
+.sidebar h2 .superadmin {
+    color: #ffffff; 
+    font-style: italic;
+    font-size: 20px;
+    font-weight: normal; 
+    margin-left: 90px;
+    position: relative; 
+    top: -5px;
+}
+
+.sidebar ul {
+    list-style-type: none;
+}
+
+.sidebar ul li {
+    margin: 20px 0;
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.sidebar ul li a img {
+    margin-right: 10px; 
+    margin-left: -35px;
+    width: 20px; 
+    height: auto;
+}
+
+.sidebar a.logout {
+    margin-top: 291px;
+    display: flex;
+    align-items: center; 
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.sidebar a.logout img {
+    margin-right: 10px; 
+    margin-left: 4px;
+    width: 20px; 
+    height: auto;
+    vertical-align: middle; 
+    margin-bottom: 0; 
+}
+
+.dashboard {
+    margin-left: 300px; 
+    padding: 30px;
+    width: calc(100% - 250px);
+    overflow-y: auto; 
+}
+
+.icons {
+    display: flex; 
+    gap: 20px; 
+    margin-top: -10px;
+    margin-left: 800px;
+}
+
+.icons img {
+    width: 30px;
+    height: auto;
+}
+.wrapper {
+  background-color: #fff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  width: 850px; 
+  height: auto; 
+  margin: 50px auto;
+  padding: 20px;
+  min-width: 200px;
+}
+.button-group2 {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  margin-right: 500px;
+  gap: 20px;
+}
+button1{
+    background-color: #E0E8EB;
+  color: #000;
+  font-weight: bold;
+  border: 5px;
+  padding: 10px 24px;
+  border-radius: 75px;
+  cursor: pointer;
+  font-size: 25px;
+  width: 150px;
+  text-align: center;
+}
+button2{
+    background-color: #008AB5;
+  color: #fff;
+  font-weight: bold;
+  border: 5px;
+  padding: 10px 24px;
+  border-radius: 75px;
+  cursor: pointer;
+  font-size: 25px;
+  width: 150px;
+  text-align: center;
+}
+
+button1:hover {
+  background-color: #008AB5;
+  color: #fff;
+  border: 5px;
+  padding: 10px 20px;
+  border-radius: 50px;
+}
+.button-group {
+  display: flex;
+  flex-direction: column; 
+  align-items: flex-end; 
+  gap: 10px; 
+  margin-top: -60px;
+}
+
+.button {
+  background-color: #008CBA;
+  color: white;
+  padding: 5px 10px; 
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.button img.icon {
+  width: 15px;
+  height: auto;
+  margin-right: 8px; 
+}
+.button:hover {
+  background-color: #65ACC2;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 40px;
+}
+th, td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+th {
+background-color: #f0f0f0;
+}
+.view-details {
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+  font-style: italic;
+}
+.view-details:hover {
+  text-decoration: underline;
+}
+</style>

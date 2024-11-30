@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThirstTap Admin</title>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2><span class="thirst">Thirst</span><span class="tap">Tap</span><br><span class="admin">Admin</span></h2>
+            <ul class="list-unstyled">
+                <li><a href="dashboard.html"><img src="assets/dashboard icon.svg" alt="Dashboard Icon"> Dashboard</a></li>
+                <li><a href="inventory.html"><img src="assets/inventory icon.svg" alt="Inventory Icon"> Inventory</a></li>
+                <li><a href="station_profile.html"><img src="assets/station profile icon.svg" alt="Station Profile Icon"> Station Profile</a></li>
+                <li><a href="orders.html"><img src="assets/orders icon.svg" alt="Orders Icon"> Orders</a></li>
+                <li><a href="customer_feedback.html"><img src="assets/cf icon.svg" alt="Customer Feedback Icon"> Customer Feedback</a></li>
+                <li><a href="sales_report.html"><img src="assets/sales icon.svg" alt="Sales Report Icon"> Sales Report</a></li>
+            </ul>
+            <a href="login_page.php" class="logout"><img src="assets/logout icon.svg" alt="Logout Icon"> Log out</a>
+        </aside>
+        <main class="inventory">
+            <div class="icons">
+                <a href="notif.html" class="notification-icon"><img src="assets/bell-02.svg" alt="Notification Icon"></a>
+                <a href="profile_settings.html" class="profile-icon"><img src="assets/user-profile-circle.svg" alt="Profile Icon"></a>
+            </div>
+            <div class="main-content">
+                <div class="header">
+                    <h2>Water Type</h2>
+                    <div class="water-types">
+                        <div class="toggle-container">
+                            <label class="toggle">
+                                <input type="checkbox" id="alkaline-toggle">
+                                <span class="slider"></span>
+                            </label>
+                            <label class="custom-control-label" for="alkaline-toggle">Alkaline</label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle">
+                                <input type="checkbox" id="purified-toggle">
+                                <span class="slider"></span>
+                            </label>
+                            <label class="custom-control-label" for="purified-toggle">Purified</label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle">
+                                <input type="checkbox" id="mineral-toggle">
+                                <span class="slider"></span>
+                            </label>
+                            <label class="custom-control-label" for="mineral-toggle">Mineral</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gallon-section">
+                    <h2>Gallon Size</h2>
+                    <div class="toggle-container">
+                        <label class="toggle">
+                            <input type="checkbox" id="round-5gal-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <label class="custom-control-label" for="round-5gal-toggle">Round 5 Gallon</label>
+                    </div>
+                    <div class="toggle-container">
+                        <label class="toggle">
+                            <input type="checkbox" id="slim-5gal-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <label class="custom-control-label" for="slim-5gal-toggle">Slim 5 Gallon</label>
+                    </div>
+                    <div class="toggle-container">
+                        <label class="toggle">
+                            <input type="checkbox" id="slim-2-5gal-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <label class="custom-control-label" for="slim-2-5gal-toggle">Slim 2.5 Gallon</label>
+                    </div>
+                </div>
+
+                <div class="container-options">
+                    <h2>Container Options</h2>
+                    <div class="toggle-container">
+                        <label class="toggle">
+                            <input type="checkbox" id="new-container-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <label class="custom-control-label" for="new-container-toggle">New Container</label>
+                    </div>
+                    <div class="toggle-container">
+                        <label class="toggle">
+                            <input type="checkbox" id="exchange-container-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <label class="custom-control-label" for="exchange-container-toggle">Exchange Container</label>
+                    </div>
+                </div>
+
+                <button id="save-toggle-settings" class="btn btn-primary">Save Settings</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Fetch current station options when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('../../WebsiteBackend/fetchStationOptions.php')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('alkaline-toggle').checked = data.is_alkaline_enabled == 1;
+                    document.getElementById('purified-toggle').checked = data.is_distilled_enabled == 1;
+                    document.getElementById('round-5gal-toggle').checked = data.is_round_5gal_enabled == 1;
+                    document.getElementById('slim-5gal-toggle').checked = data.is_slim_5gal_enabled == 1;
+                    document.getElementById('slim-2-5gal-toggle').checked = data.is_slim_2_5gal_enabled == 1;
+                    document.getElementById('new-container-toggle').checked = data.is_new_container_enabled == 1;
+                    document.getElementById('exchange-container-toggle').checked = data.is_exchange_container_enabled == 1;
+                })
+                .catch(error => {
+                    console.error('Error fetching station options:', error);
+                });
+        });
+
+        document.getElementById('save-toggle-settings').addEventListener('click', function() {
+            const confirmSave = confirm("Are you sure you want to save these settings?");
+            if (!confirmSave) {
+                return; // Exit if the user cancels
+            }
+
+            const stationId = 8; // You might want to change this to fetch from session
+            const data = {
+                station_id: stationId,
+                is_alkaline_enabled: document.getElementById('alkaline-toggle').checked ? 1 : 0,
+                is_distilled_enabled: document.getElementById('purified-toggle').checked ? 1 : 0,
+                is_round_5gal_enabled: document.getElementById('round-5gal-toggle').checked ? 1 : 0,
+                is_slim_5gal_enabled: document.getElementById('slim-5gal-toggle').checked ? 1 : 0,
+                is_slim_2_5gal_enabled: document.getElementById('slim-2-5gal-toggle').checked ? 1 : 0,
+                is_new_container_enabled: document.getElementById('new-container-toggle').checked ? 1 : 0,
+                is_exchange_container_enabled: document.getElementById('exchange-container-toggle').checked ? 1 : 0,
+            };
+
+            fetch('../../WebsiteBackend/updateStationOptions.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert(result.message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+<style>
+.toggle {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+
+       
+
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background-color: #f0f4f8;
+    overflow-x: hidden;
+}
+.container {
+    display: flex;
+}
+.sidebar {
+    width: 250px;
+    background-color: #65ACC2;
+    height: 100vh;
+    padding: 20px;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+.sidebar h2 {
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+}
+
+.sidebar h2 .thirst {
+    color: #0033FF; 
+    font-weight: 700; 
+    font-size: 40px; 
+}
+.sidebar h2 .tap{
+    color: #ffffff;
+    font-size: 40px;
+}
+.sidebar h2 .admin {
+    color: #ffffff; 
+    font-style: italic; 
+    font-size: 20px; 
+    font-weight: normal; 
+    margin-left: 160px;
+    position: relative; 
+    top: -5px;
+}
+.sidebar ul {
+    list-style-type: none;
+}
+.sidebar ul li {
+    margin: 20px 0;
+}
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+.sidebar ul li a img {
+    margin-right: 10px; 
+    margin-left: -35px;
+    width: 20px; 
+    height: auto;
+}
+.sidebar a.logout {
+    margin-top: 150px;
+    display: flex; 
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+.sidebar a.logout img{
+    margin-right: 10px; 
+    margin-left: 4px;
+    width: 20px;
+    height: auto;
+    vertical-align: middle; 
+    margin-bottom: 0; 
+}
+.inventory{
+    margin-left: 300px; 
+    padding: 30px;
+    width: calc(100% - 250px);
+    overflow-y: auto; 
+}
+.top-section {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 20px; 
+    align-items: flex-start;
+}.icons {
+    display: flex;
+    gap: 20px;
+    margin-top: -10px;
+    margin-left: 800px;
+}
+.icons img {
+    width: 30px; 
+    height: auto;
+    
+}
+.main-content {
+    padding: 20px;
+    background-color: #ffffff;
+    height: 100vh;
+    margin-top: 40px;
+    border-radius: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+.header {
+    margin-bottom: 30px;
+}
+h2 {
+    color: #000;
+    font-weight: 700;
+}
+.water-types {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+.water-type {
+    padding: 10px 20px;
+    background-color: #e0e0e0;
+    border: none;
+    border-radius: 20px;
+    color: #000;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'Poppins', Arial, sans-serif;
+}
+.water-type:hover {
+    background-color: #008AB5;
+}
+.gallon-section {
+    margin-top: 20px;
+}
+.gallon-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.gallon-image {
+    width: 100px;
+    height: auto;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.add-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    background-color: #fff;
+    border: 2px solid #ccc;
+    border-radius: 20px;
+    font-size: 30px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+</style>

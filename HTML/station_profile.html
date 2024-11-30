@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThirstTap Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+</head>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2><span class="thirst">Thirst</span><span class="tap">Tap</span><br><span class="admin">Admin</span></h2>
+            <ul>
+                <li><a href="dashboard.html"><img src="assets/dashboard icon.svg" alt="Dashboard Icon"> Dashboard</a></li>
+                <li><a href="inventory.html"><img src="assets/inventory icon.svg" alt="Inventory Icon"> Inventory</a></li>
+                <li><a href="station_profile.html"><img src="assets/station profile icon.svg" alt="Station Profile Icon"> Station Profile</a></li>
+                <li><a href="orders.html"><img src="assets/orders icon.svg" alt="Orders Icon"> Orders</a></li>
+                <li><a href="customer_feedback.html"><img src="assets/cf icon.svg" alt="Customer Feedback Icon"> Customer Feedback</a></li>
+                <li><a href="sales_report.html"><img src="assets/sales icon.svg" alt="Sales Report Icon"> Sales Report</a></li>
+            </ul>
+            <a href="login_page.php" class="logout"><img src="assets/logout icon.svg" alt="Logout Icon"> Log out</a>
+        </aside>
+        <main class="sprofile">
+            <div class="icons">
+            <a href="notif.html" class="notification-icon"><img src="assets/bell-02.svg" alt="Notification Icon"></a>
+            <a href="profile_settings.html" class="profile-icon"><img src="assets/user-profile-circle.svg" alt="Profile Icon"></a>
+        </div>
+        <div class="station-profile">
+                <div class="profile-header">
+                    <div class="profile-picture-wrapper">
+                        <img id="profile-picture" src="assets/profilepic.svg" alt="Profile Picture">
+                        <input type="file" id="profile-input" accept="image/*" style="display: none;">
+                        <label for="profile-input" class="change-picture">Change picture</label>
+                    </div>
+                    <h3 class="profile-name">Name <img src="assets/edit icon.svg" alt="Edit Icon"></h3>
+                </div>
+                
+                <div class="profile-details">
+                    <div class="location-input">
+    <label for="latitude">Location Latitude</label>
+    <input type="text" id="latitude" placeholder="Enter latitude">
+
+    <label for="longitude">Location Longitude</label>
+    <input type="text" id="longitude" placeholder="Enter longitude">
+
+    <button onclick="getAddress()">Get Address</button> <!-- Trigger to get address -->
+    
+    <p id="address-result"></p> 
+</div>
+
+                    
+                    <label for="contact">Contact Number</label>
+                    <input type="tel" id="contact" placeholder="Enter station contact number">
+                    
+                    <div class="operating-hours">
+                        <label>Opening Hours</label>
+                        <div class="time-inputs">
+                            <input type="text" placeholder="HH" maxlength="2"> <span>:</span>
+                            <input type="text" placeholder="MM" maxlength="2">
+                            <select>
+                                <option>AM</option>
+                                <option>PM</option>
+                            </select>
+                            <span> — </span>
+                            <input type="text" placeholder="HH" maxlength="2"> <span>:</span>
+                            <input type="text" placeholder="MM" maxlength="2">
+                            <select>
+                                <option>AM</option>
+                                <option>PM</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button class="save-btn">Save</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+        </body>
+</html>
+
+<style>
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background-color: #f0f4f8;
+    overflow-x: hidden;
+}
+.container {
+    display: flex;
+}
+.sidebar {
+    width: 250px;
+    background-color: #65ACC2;
+    height: 100vh;
+    padding: 20px;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+.sidebar h2 {
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+}
+
+.sidebar h2 .thirst {
+    color: #0033FF; 
+    font-weight: 700; 
+    font-size: 40px;
+}
+.sidebar h2 .tap{
+    font-size: 40px;
+}
+.sidebar h2 .admin {
+    color: #ffffff; 
+    font-style: italic; 
+    font-size: 20px; 
+    font-weight: normal;
+    margin-left: 160px;
+    position: relative; 
+    top: -5px;
+}
+.sidebar ul {
+    list-style-type: none;
+}
+.sidebar ul li {
+    margin: 20px 0;
+}
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+.sidebar ul li a img {
+    margin-right: 10px; 
+    margin-left: -35px;
+    width: 20px; 
+    height: auto;
+}
+.sidebar a.logout {
+    margin-top: 150px;
+    display: flex; 
+    align-items: center; 
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+.sidebar a.logout img{
+    margin-right: 10px; 
+    margin-left: 4px;
+    width: 20px; 
+    height: auto;
+    vertical-align: middle; 
+    margin-bottom: 0; 
+}
+.sprofile {
+    margin-left: 300px; 
+    padding: 30px;
+    width: calc(100% - 250px);
+    overflow-y: auto;
+}
+.top-section {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 20px; 
+    align-items: flex-start;
+}.icons {
+    display: flex; 
+    gap: 20px; 
+    margin-top: -10px;
+    margin-left: 800px;
+}
+.icons img {
+    width: 30px; 
+    height: auto;
+    
+}
+.station-profile {
+    background-color: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 900px;
+    margin: 0 auto;
+    margin-top: 40px;
+}
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.profile-picture-wrapper {
+    position: relative;
+    width: 80px; 
+    height: 80px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid #d3d3d3;
+    cursor: pointer;
+}
+#profile-picture {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.change-picture {
+    position: absolute;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    padding: 2px 0;
+    cursor: pointer;
+}
+.profile-name {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+}
+.profile-name img{
+    margin-left: 10px;
+    width: 15px;
+}
+.profile-details {
+    margin-top: 20px;
+}
+.profile-details label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+.profile-details input {
+    width: 90%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    background-color: #E0E8EB;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2); /* Inner shadow */
+}
+.profile-details img{
+    margin-left: -29px;
+    margin-bottom: -4px;
+    width: 15px;
+}
+.location-input {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+}
+
+.location-input button {
+    padding: 10px;
+    background-color: #008AB5;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 15%;
+
+}
+
+button:hover {
+    background-color: #265b9f;
+}
+
+#address-result {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.operating-hours {
+    margin-bottom: 15px;
+}
+.time-inputs {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+.time-inputs input {
+    width: 70px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    text-align: center;
+}
+.time-inputs select {
+    padding: 5px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+.time-inputs span{
+    margin-bottom: 10px;
+}
+.save-btn {
+    background-color: #008AB5;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 1px;
+    width: 20%;
+}
+.save-btn:hover {
+    background-color: #0056b3;
+}
+</style>

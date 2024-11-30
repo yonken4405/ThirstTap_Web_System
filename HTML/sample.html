@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AJAX CRUD Operations</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>AJAX CRUD Operations</h1>
+
+    <!-- Form for Creating or Updating Data -->
+    <form id="itemForm">
+        <input type="hidden" id="item_id" name="id" value="">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea><br>
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Table to Display Data -->
+    <h2>Items List</h2>
+    <table id="itemsTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        // When the document is ready, fetch the items
+        $(document).ready(function() {
+            fetchItems();
+        });
+
+        // Handle form submission for creating or updating items
+        $('#itemForm').submit(function(event) {
+            event.preventDefault();
+
+            let formData = {
+                id: $('#item_id').val(),
+                name: $('#name').val(),
+                description: $('#description').val()
+            };
+
+            // Determine if it's a create or update operation
+            let url = formData.id ? 'update.php' : 'create.php';
+
+            // AJAX request to submit the form data
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    // Reset the form after success
+                    $('#itemForm')[0].reset();
+                    $('#item_id').val('');
+                    fetchItems(); // Refresh the items list
+                },
+                error: function(xhr, status, error) {
+                    console.log(error);
+                }
+            });
+        });
+
+        // Fetch all items from the database
+        function fetchItems() {
+            $.ajax({
+                url: 'read.php',
+                type: 'GET',
+                success: function(response) {
+                    const items = JSON.parse(response);
+                    let rows = '';
+                    items.forEach(item => {
+                        rows += `
+                            <tr>
+                                <td>${item.id}</td>
+                                <td>${item.name}</td>
+                                <td>${item.description}</td>
+                                <td>
+                                    <button onclick="editItem(${item.id})">Edit</button>
+                                    <button onclick="deleteItem(${item.id})">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    $('#itemsTable tbody').html(rows);
+                },
+                error: function(xhr, status, error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        // Edit item (populate form with existing data)
+        function editItem(id) {
+            $.ajax({
+                url: 'read_single.php',
+                type: 'GET',
+                data: { id: id },
+                success: function(response) {
+                    const item = JSON.parse(response);
+                    $('#item_id').val(item.id);
+                    $('#name').val(item.name);
+                    $('#description').val(item.description);
+                },
+                error: function(xhr, status, error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        // Delete an item
+        function deleteItem(id) {
+            $.ajax({
+                url: 'delete.php',
+                type: 'POST',
+                data: { id: id },
+                success: function(response) {
+                    fetchItems(); // Refresh the list
+                },
+                error: function(xhr, status, error) {
+                    console.log(error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

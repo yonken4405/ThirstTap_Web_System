@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThirstTap Super Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Add styles for the selected row */
+        .selected {
+            background-color: #d1e7dd; /* Light green background color */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2><span class="thirst">Thirst</span><span class="tap">Tap</span><br><span class="superadmin">Super Admin</span></h2>
+            <ul>
+                <li><a href="super admin dashboard.html"><img src="super admin assets/dashboard icon.svg" alt="Dashboard Icon"> Dashboard</a></li>
+                <li><a href="super admin stations.html"><img src="super admin assets/station icon.svg" alt="Stations Icon"> Stations</a></li>
+                <li><a href="super admin admins.html"><img src="super admin assets/admins and users icon.svg" alt="Admins and Users Icon"> Admins and Users</a></li>
+            </ul>
+            <a href="../login_page.php" class="logout"><img src="../assets/logout icon.svg" alt="Logout Icon"> Log out</a>
+        </aside>
+        <main class="dashboard">
+            <div class="icons">
+                <a href="super admin notifs.html" class="notification-icon"><img src="assets/bell-02.svg" alt="Notification Icon"></a>
+                <a href="super admin profile settings.html" class="profile-icon"><img src="assets/user-profile-circle.svg" alt="Profile Icon"></a>
+            </div>
+            <div class="wrapper">
+                <h3>Water Refilling Stations</h3>
+                <div class="button-group">
+                    <button class="button" onclick="location.href='super admin add new station.html'">
+                        <img src="super admin assets/add icon.svg" alt="Add Icon" class="icon"> Add new station
+                    </button>
+                    <button class="button" onclick="removeStation()">
+                        <img src="super admin assets/remove icon.svg" alt="Remove Icon" class="icon"> Remove station
+                    </button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Station ID</th>
+                            <th>Station Name</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="stations-table-body">
+                        <!-- Stations will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetchStations(); // Fetch stations on page load
+        });
+
+        function fetchStations() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '../../WebsiteBackend/fetchStations.php', true); // Adjust the path as necessary
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    const tbody = document.getElementById('stations-table-body');
+                    tbody.innerHTML = ''; // Clear existing rows
+
+                    data.forEach(station => {
+                        const row = `
+                            <tr onclick="selectStation(this, ${station.station_id})">
+                                <td>${station.station_id}</td>
+                                <td>${station.name}</td>
+                                <td>
+                                    <a href="super admin stations view details.html?station_id=${station.station_id}" class="view-details">View details</a>
+          
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row; // Append station to the table
+                    });
+                } else if (xhr.readyState === 4) {
+                    console.error('Error fetching stations:', xhr.statusText);
+                }
+            };
+
+            xhr.onerror = function() {
+                console.error('Request failed');
+            };
+
+            xhr.send();
+        }
+
+        let selectedRow = null; // Variable to keep track of the selected row
+
+        function selectStation(row, stationId) {
+            // Deselect the previously selected row if it exists
+            if (selectedRow) {
+                selectedRow.classList.remove('selected'); // Remove the highlight from the previously selected row
+            }
+
+            // Highlight the newly selected row
+            selectedRow = row; // Update the selected row variable
+            row.classList.add('selected'); // Add the highlight to the selected row
+
+            // Perform any additional actions you want with the selected station ID
+            console.log('Selected Station ID:', stationId);
+            // You can also trigger further actions like showing details or enabling delete
+        }
+
+        function removeStation() {
+        if (selectedRow) {
+            const stationId = selectedRow.cells[0].textContent; // Get the Station ID from the selected row
+            
+            // Confirm deletion
+            const confirmDelete = confirm(`Are you sure you want to delete station with ID: ${stationId}?`);
+            
+            if (confirmDelete) {
+                // Proceed with deletion
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '../../WebsiteBackend/deleteStation.php', true); // Adjust the path as necessary
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+                // Send the station ID to the server
+                xhr.send(`station_id=${stationId}`);
+
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            console.log(`Station with ID: ${stationId} deleted successfully.`);
+                            // Remove the selected row from the table
+                            selectedRow.remove(); // Remove the selected row from the DOM
+                            selectedRow = null; // Reset the selected row variable
+                        } else {
+                            alert('Error deleting station: ' + response.message);
+                        }
+                    }
+                };
+            }
+        } else {
+            alert('Please select a station to remove.');
+        }
+    }
+
+
+
+    </script>
+</body>
+</html>
+
+
+
+<style>
+.selected {
+  background-color: #d1e7dd; /* Light green background color */
+}
+
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background-color: #f0f4f8;
+    overflow-x: hidden;
+}
+
+.container {
+    display: flex;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #65ACC2;
+    height: 100vh;
+    padding: 20px;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.sidebar h2 {
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+}
+
+.sidebar h2 .thirst {
+    color: #0033FF; 
+    font-weight: 700; 
+    font-size: 40px; 
+}
+
+.sidebar h2 .tap {
+    font-size: 40px;
+}
+
+.sidebar h2 .superadmin {
+    color: #ffffff; 
+    font-style: italic; 
+    font-size: 20px; 
+    font-weight: normal;
+    margin-left: 90px;
+    position: relative; 
+    top: -5px;
+}
+
+.sidebar ul {
+    list-style-type: none;
+}
+
+.sidebar ul li {
+    margin: 20px 0;
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.sidebar ul li a img {
+    margin-right: 10px; 
+    margin-left: -35px;
+    width: 20px;
+    height: auto;
+}
+
+.sidebar a.logout {
+    margin-top: 291px;
+    display: flex;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.sidebar a.logout img {
+    margin-right: 10px; 
+    margin-left: 4px;
+    width: 20px; 
+    height: auto;
+    vertical-align: middle; 
+    margin-bottom: 0; 
+}
+
+.dashboard {
+    margin-left: 300px; 
+    padding: 30px;
+    width: calc(100% - 250px);
+    overflow-y: auto; 
+}
+
+.icons {
+    display: flex; 
+    gap: 20px; 
+    margin-top: -10px;
+    margin-left: 800px;
+}
+
+.icons img {
+    width: 30px; 
+    height: auto;
+}
+.wrapper {
+  background-color: #fff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  width: 850px; 
+  height: auto; 
+  margin: 50px auto;
+  padding: 20px;
+  min-width: 200px;
+}
+
+h3 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column; 
+  align-items: flex-end; 
+  gap: 10px; 
+  margin-top: -70px;
+}
+
+.button {
+  background-color: #008CBA;
+  color: white;
+  padding: 5px 10px; 
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.button img.icon {
+  width: 15px;
+  height: auto;
+  margin-right: 8px; 
+}
+
+.button:hover {
+  background-color: #65ACC2;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #f0f0f0;
+  font-weight: 600;
+}
+
+.view-details {
+  text-decoration: none;
+  color: #007bff;
+  cursor: pointer;
+  font-style: italic;
+}
+
+.view-details:hover {
+  text-decoration: underline;
+}
+
+.icons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+}
+
+.icons img {
+  width: 30px;
+  height: auto;
+}
+
+</style>

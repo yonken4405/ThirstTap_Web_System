@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThirstTap Super Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS if you have one -->
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2><span class="thirst">Thirst</span><span class="tap">Tap</span><br><span class="superadmin">Super Admin</span></h2>
+            <ul>
+                <li><a href="super admin dashboard.html"><img src="super admin assets/dashboard icon.svg" alt="Dashboard Icon"> Dashboard</a></li>
+                <li><a href="super admin stations.html"><img src="super admin assets/station icon.svg" alt="Stations Icon"> Stations</a></li>
+                <li><a href="super admin admins.html"><img src="super admin assets/admins and users icon.svg" alt="Admins and Users Icon"> Admins and Users</a></li>
+            </ul>
+            <a href="../login_page.php" class="logout"><img src="../assets/logout icon.svg" alt="Logout Icon"> Log out</a>
+        </aside>
+        <main class="dashboard">
+            <div class="icons">
+                <a href="super_admin_notifs.html" class="notification-icon"><img src="assets/bell-02.svg" alt="Notification Icon"></a>
+                <a href="super_admin_profile_settings.html" class="profile-icon"><img src="assets/user-profile-circle.svg" alt="Profile Icon"></a>
+            </div>
+            <div class="top-section">
+                <div class="stat-card">
+                    <h3><span id="totalStations">Loading...</span></h3>
+                    <p>Total number of stations</p>
+                    <a href="super admin stations.html" class="view-more">
+                        <span class="view-more-text">View more</span>
+                        <img src="assets/view more icon.svg" alt="Icon" class="view-more-icon"></a>
+                </div>
+                <div class="stat-card">
+                    <h3><span id="totalUsers">Loading...</span></h3>
+                    <p>Total number of users</p>
+                    <a href="super admin users.html" class="view-more">
+                        <span class="view-more-text">View more</span>
+                        <img src="assets/view more icon.svg" alt="Icon" class="view-more-icon"></a>
+                </div>
+                <div class="stat-card">
+                    <h3><span id="totalSales">Loading...</span></h3>
+                    <p>Total sales from completed orders</p>
+                    <a href="super admin orders.html" class="view-more">
+                        <span class="view-more-text">View more</span>
+                        <img src="assets/view more icon.svg" alt="Icon" class="view-more-icon"></a>
+                </div>
+            </div>
+
+            <!-- Line Chart Section -->
+            <div class="sales-chart">
+                <h3>Sales Overview (Current Year)</h3>
+                <canvas id="salesChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="completed-orders">
+                <h3>Completed Orders (Last Month)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>User ID</th>
+                            <th>Order Date</th>
+                            <th>Total Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="completedOrdersBody">
+                        <tr>
+                            <td colspan="4">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Function to fetch dashboard data
+        function fetchDashboardData() {
+            fetch('../../WebsiteBackend/fetchSuperAdminDashboardData.php')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update the HTML with the fetched data
+                    document.getElementById('totalUsers').textContent = data.total_users;
+                    document.getElementById('totalSales').textContent = data.total_sales;
+                    document.getElementById('totalStations').textContent = data.total_stations;
+    
+                    // Populate the completed orders table
+                    const completedOrdersBody = document.getElementById('completedOrdersBody');
+                    completedOrdersBody.innerHTML = ''; // Clear the loading message
+    
+                    if (data.completed_orders.length > 0) {
+                        data.completed_orders.forEach(order => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${order.orderid}</td>
+                                <td>${order.userid}</td>
+                                <td>${new Date(order.order_date).toLocaleString()}</td>
+                                <td>${order.total_price}</td>
+                            `;
+                            completedOrdersBody.appendChild(row);
+                        });
+                    } else {
+                        completedOrdersBody.innerHTML = '<tr><td colspan="4">No completed orders found.</td></tr>';
+                    }
+    
+                    // If sales data is available, set up the sales chart
+                    if (data.sales_data) {
+                        setupSalesChart(data.sales_data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching dashboard data:', error);
+                });
+        }
+    
+        function setupSalesChart(salesData) {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            const labels = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            const sales = labels.map((label, index) => salesData[index + 1] || 0); // Map sales data for each month
+    
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales (Current Year)',
+                        data: sales,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: true,
+                        tension: 0.3,
+                    }]
+                },
+                options: {
+                    responsive: true, // Ensure the chart is responsive
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Sales Amount',
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Months',
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    
+        // Fetch data on page load
+        fetchDashboardData();
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+<style>
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background-color: #f0f4f8;
+    overflow-x: hidden;
+}
+.container {
+    display: flex;
+}
+.sidebar {
+    width: 250px;
+    background-color: #65ACC2;
+    height: 100vh;
+    padding: 20px;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+.sidebar h2 {
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+}
+
+.sidebar h2 .thirst {
+    color: #0033FF; 
+    font-weight: 700; 
+    font-size: 40px;
+}
+.sidebar h2 .tap{
+    font-size: 40px;
+}
+.sidebar h2 .superadmin {
+    color: #ffffff; 
+    font-style: italic; 
+    font-size: 20px; 
+    font-weight: normal;
+    margin-left: 90px;
+    position: relative; 
+    top: -5px;
+}
+.sidebar ul {
+    list-style-type: none;
+}
+.sidebar ul li {
+    margin: 20px 0;
+}
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+.sidebar ul li a img {
+    margin-right: 10px; 
+    margin-left: -35px;
+    width: 20px; 
+    height: auto;
+}
+.sidebar a.logout {
+    margin-top: 291px;
+    display: flex; 
+    align-items: center; 
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+.sidebar a.logout img{
+    margin-right: 10px; 
+    margin-left: 4px;
+    width: 20px;
+    height: auto;
+    vertical-align: middle; 
+    margin-bottom: 0; 
+}
+.dashboard {
+    margin-left: 300px; 
+    padding: 30px;
+    width: calc(100% - 250px);
+    overflow-y: auto; 
+}
+.top-section {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 20px; 
+    align-items: flex-start;
+}.icons {
+    display: flex; 
+    gap: 20px; 
+    margin-top: -10px;
+    margin-left: 800px;
+}
+.icons img {
+    width: 30px; 
+    height: auto;
+    
+}.stat-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 50px
+}
+
+.stat-card h3 {
+    font-size: 40px;
+    color: #008AB5;
+    font-weight: normal;
+}
+
+.stat-card p {
+    margin: 5px 0;
+    color: #333;
+    margin-top: -30px;
+    font-size: 20px;
+}
+
+.view-more {
+    margin-top: 15px;
+    color: #007BFF;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex; 
+    align-items: center; 
+    color: #008AB5; 
+    text-decoration: none; 
+    font-weight: bold; 
+    position: relative; 
+    z-index: 1; 
+}
+
+.view-more-text {
+    margin-right: 8px;
+}
+
+.view-more-icon {
+    width: 13px;
+    height: auto; 
+    position: relative; 
+
+}
+
+@media (max-width: 600px) {
+    .stat-card h3 {
+        font-size: 20px;
+    }
+
+    .stat-card p {
+        font-size: 14px;
+    }
+}
+.recent-users,
+.completed-orders {
+    margin-top: 40px; 
+    background-color: #fff; 
+    padding: 20px; 
+    border-radius: 20px; 
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+.recent-users h3,
+.completed-orders h3 {
+    margin-bottom: 20px; 
+    font-size: 25px;
+    background-color: #fff; 
+    margin-top: 5px;
+}
+
+table {
+    width: 100%; 
+    border-collapse: collapse; 
+    background-color: #fff; 
+    margin-top: 0; 
+}
+
+table th, table td {
+    padding: 15px;
+    text-align: left;
+}
+
+table th {
+    background-color: #f0f0f0;
+}
+
+table a {
+    color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+  font-style: italic;
+}
+table a:hover {
+  text-decoration: underline;
+}
+</style>
